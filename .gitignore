@@ -1,1 +1,9 @@
 /EWARM/FOD119/Obj/STM32L0xx_HAL_Driver_13112456569142733789.dir/*.o
+/EWARM/FOD119/BrowseInfo/*.ninja
+/EWARM/FOD119/BrowseInfo/Src_9005775194997999293.dir/*.json
+*.bat
+*.json
+*.idx
+*.xcl
+*.ninja_log
+*.ps1
