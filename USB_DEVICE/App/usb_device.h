@@ -51,7 +51,34 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+#define DATA_EEPROM_START_ADDR     (0x08080000)
+#define DATA_EEPROM_END_ADDR       (0x08081FFF)
+    
+/* DataBase used to hold device parameters */
+#define HW_DATABASE0_BASE_OFFSET        (0)
+#define HW_DATABASE0_BASE_ADDR          (DATA_EEPROM_START_ADDR + HW_DATABASE0_BASE_OFFSET)
+    
+/* Product name descriptor string record */
+/* Magic field*/
+#define HW_DATABASE0_FIELD_MAGIC            (0xa5)
+#define HW_DATABASE0_FIELD_MAGIC_SIZE       (1)
+/* Checksum Field */
+#define HW_DATABASE0_FIELD_CHECKSUM_SIZE    (1)
+/* Product name descriptor string */
+#define HW_DATABASE0_FIELD_PRODUCT_SIZE     (16+1)
+/* Serial Number descriptor string */
+#define HW_DATABASE0_FIELD_SERIALNUM_SIZE   (16+1) 
+    
+/**/
+/* Product name descriptor string record */
+#define HW_DATABASE0_RECORD_PRODUCT_SIZE     (HW_DATABASE0_FIELD_MAGIC_SIZE + HW_DATABASE0_FIELD_PRODUCT_SIZE + HW_DATABASE0_FIELD_CHECKSUM_SIZE)
+#define HW_DATABASE0_RECORD_PRODUCT_OFFSET   (0)
+#define HW_DATABASE0_RECORD_PRODUCT_ADDR     (HW_DATABASE0_BASE_ADDR + HW_DATABASE0_RECORD_PRODUCT_OFFSET)
+/**/
+/* Serial Number descriptor string record */
+#define HW_DATABASE0_RECORD_SERIALNUM_SIZE     (HW_DATABASE0_FIELD_MAGIC_SIZE + HW_DATABASE0_FIELD_SERIALNUM_SIZE + HW_DATABASE0_FIELD_CHECKSUM_SIZE)
+#define HW_DATABASE0_RECORD_SERIALNUM_OFFSET   (HW_DATABASE0_RECORD_PRODUCT_OFFSET + HW_DATABASE0_RECORD_PRODUCT_SIZE)
+#define HW_DATABASE0_RECORD_SERIALNUM_ADDR     (HW_DATABASE0_BASE_ADDR + HW_DATABASE0_RECORD_SERIALNUM_OFFSET)
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -81,7 +108,14 @@ void MX_USB_DEVICE_Init(void);
  * -- Insert functions declaration here --
  */
 /* USER CODE BEGIN FD */
+void IAD_USB_DEVICE_Init(void);
 
+const uint8_t* drv_hw_FrimwareVersionPtrGet(void);
+const uint8_t* drv_hw_ProductNamePtrGet(void);
+const uint8_t* drv_hw_SerialNumberPtrGet(void);
+
+void drv_hw_ProductNameDatabaseWrite(const uint8_t *str);
+void drv_hw_SerialNumberDatabaseWrite(const uint8_t *str);
 /* USER CODE END FD */
 /**
   * @}

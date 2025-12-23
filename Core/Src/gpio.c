@@ -57,7 +57,7 @@ void MX_GPIO_Init(void)
                           |LD_CH16_Pin|LD_PWREN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, LED_CH13_Pin|LED_CH15_Pin|LED_CH14_Pin|LED_CH13C2_Pin
+  HAL_GPIO_WritePin(GPIOC, LED_CH16_Pin|LED_CH15_Pin|LED_CH14_Pin|LED_CH13_Pin
                           |LED_CH12_Pin|LED_CH11_Pin|LED_CH10_Pin|LED_CH8_Pin
                           |LED_CH7_Pin|LED_CH6_Pin|LED_CH5_Pin|LED_CH1_Pin
                           |LED_CH2_Pin|LED_CH3_Pin, GPIO_PIN_RESET);
@@ -76,36 +76,41 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LED_R_Pin LED_G_Pin LD_ON_Pin LD_CH11_Pin
-                           LD_CH12_Pin LD_CH13_Pin LD_CH14_Pin LD_CH15_Pin
-                           LD_CH16_Pin LD_PWREN_Pin */
-  GPIO_InitStruct.Pin = LED_R_Pin|LED_G_Pin|LD_ON_Pin|LD_CH11_Pin
-                          |LD_CH12_Pin|LD_CH13_Pin|LD_CH14_Pin|LD_CH15_Pin
-                          |LD_CH16_Pin|LD_PWREN_Pin;
+  /*Configure GPIO pins : LED_R_Pin LED_G_Pin */
+  GPIO_InitStruct.Pin = LED_R_Pin|LED_G_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LED_CH13_Pin LED_CH15_Pin LED_CH14_Pin LED_CH13C2_Pin
+  /*Configure GPIO pins : LED_CH16_Pin LED_CH15_Pin LED_CH14_Pin LED_CH13_Pin
                            LED_CH12_Pin LED_CH11_Pin LED_CH10_Pin LED_CH8_Pin
                            LED_CH7_Pin LED_CH6_Pin LED_CH5_Pin LED_CH1_Pin
                            LED_CH2_Pin LED_CH3_Pin */
-  GPIO_InitStruct.Pin = LED_CH13_Pin|LED_CH15_Pin|LED_CH14_Pin|LED_CH13C2_Pin
+  GPIO_InitStruct.Pin = LED_CH16_Pin|LED_CH15_Pin|LED_CH14_Pin|LED_CH13_Pin
                           |LED_CH12_Pin|LED_CH11_Pin|LED_CH10_Pin|LED_CH8_Pin
                           |LED_CH7_Pin|LED_CH6_Pin|LED_CH5_Pin|LED_CH1_Pin
                           |LED_CH2_Pin|LED_CH3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LED_CH9_Pin LED_CH4_Pin LED_CH_MODE_Pin */
-  GPIO_InitStruct.Pin = LED_CH9_Pin|LED_CH4_Pin|LED_CH_MODE_Pin;
+  /*Configure GPIO pins : LED_CH9_Pin LED_CH4_Pin */
+  GPIO_InitStruct.Pin = LED_CH9_Pin|LED_CH4_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : LD_ON_Pin LD_CH11_Pin LD_CH12_Pin LD_CH13_Pin
+                           LD_CH14_Pin LD_CH15_Pin LD_CH16_Pin LD_PWREN_Pin */
+  GPIO_InitStruct.Pin = LD_ON_Pin|LD_CH11_Pin|LD_CH12_Pin|LD_CH13_Pin
+                          |LD_CH14_Pin|LD_CH15_Pin|LD_CH16_Pin|LD_PWREN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LD_CH9_Pin LD_CH10_Pin UC_PWROFF_Pin PWR_MODE_Pin
                            LD_CH1_Pin LD_CH2_Pin LD_CH3_Pin LD_CH4_Pin
@@ -117,6 +122,13 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : LED_CH_MODE_Pin */
+  GPIO_InitStruct.Pin = LED_CH_MODE_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LED_CH_MODE_GPIO_Port, &GPIO_InitStruct);
 
 }
 

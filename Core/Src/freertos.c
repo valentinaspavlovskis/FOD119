@@ -30,6 +30,10 @@
 #include "os_keyb.h"
 #include "usb_device.h"
 #include "iwdg.h"
+#include "usbd_fod.h"
+#include "usbd_fod_bot.h"
+#include "usbd_fod_desc.h"
+#include "usb_fod_device.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -181,9 +185,12 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void const * argument)
 {
   /* init code for USB_DEVICE */
-  MX_USB_DEVICE_Init();
+  //MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
   kernel_default_tsk_init();
+  
+/* init code for USB_DEVICE */
+  BOARD_USB_FOD_Init();
   /* Infinite loop */
   for(;;)
   {
@@ -320,9 +327,27 @@ void appTaskOptic(void const * argument)
 void appBulkUSB(void const * argument)
 {
   /* USER CODE BEGIN appBulkUSB */
+  uint32_t DevTicksRef200ms = 0;
+  uint32_t DevTicksRef500ms = 0;
   /* Infinite loop */
   for(;;)
   {
+    uint32_t ticks = osKernelSysTick();  
+  
+    if ((ticks - DevTicksRef200ms) >= 200){ /* 200 ms */
+      DevTicksRef200ms = ticks;
+      /* Reset watchdog */
+      //MX_IWDG_Reset();
+    }
+    
+    if ((ticks - DevTicksRef500ms) >= 500){ /* 500 ms */
+      DevTicksRef500ms = ticks;
+    }
+    if (FODUSBRequest){
+      fodUSBMainLoop(&hUsbDeviceFS);
+      FODUSBRequest = 0;
+    }
+    
     osDelay(1);
   }
   /* USER CODE END appBulkUSB */
