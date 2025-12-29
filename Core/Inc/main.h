@@ -31,7 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "drv_optic.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -199,9 +199,13 @@ void Error_Handler(void);
 #define LED_CH16_HIGH()  HAL_GPIO_WritePin(LED_CH16_GPIO_Port, LED_CH16_Pin, GPIO_PIN_SET)
 #define LED_CH16_LOW()   HAL_GPIO_WritePin(LED_CH16_GPIO_Port, LED_CH16_Pin, GPIO_PIN_RESET)
 
+#define SHUT_DOWN() HAL_GPIO_WritePin(UC_PWROFF_GPIO_Port, UC_PWROFF_Pin, GPIO_PIN_SET);
 
+/* Is Charger Connected */
+//#define HW_IS_CHARGER_CONNECTED()  (HAL_GPIO_ReadPin(CHG_PGOOD_GPIO_Port, CHG_PGOOD_Pin))
 
 /* USER CODE END Private defines */
+
 
 #ifdef __cplusplus
 }

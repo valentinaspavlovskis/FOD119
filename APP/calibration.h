@@ -19,13 +19,15 @@
 #define MAGIC 0x0D0F
 #define FW_VERSION "0.1" 
 #define CALIBRATION_VALUES_AREA_BEG_ADDR	(DATA_EEPROM_BASE) //DATA_EEPROM_BANK2_BASE ((uint32_t)0x0801E000)//
+
+#define MAX_CH_NR 17
 /* Exported macro ------------------------------------------------------------*/
 
 #pragma pack (push, 1)
 typedef struct{
   volatile uint16_t cbMagic;//Magic number used for validate image
-  volatile uint16_t cbWL;
-  volatile float  cbCalCoef;
+  volatile uint16_t cbCoefIdx[MAX_CH_NR];
+  volatile uint16_t  cbCalCoef[MAX_CH_NR];
   volatile uint16_t cbCRC;//Examine cabibration values crc
 } CalibrationTypeDef;
 #pragma pack (pop)

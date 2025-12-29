@@ -109,6 +109,7 @@ void MX_USB_DEVICE_Init(void);
  */
 /* USER CODE BEGIN FD */
 void IAD_USB_DEVICE_Init(void);
+void IAD_USB_DEVICE_DeInit(void);
 
 const uint8_t* drv_hw_FrimwareVersionPtrGet(void);
 const uint8_t* drv_hw_ProductNamePtrGet(void);

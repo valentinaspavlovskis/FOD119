@@ -112,5 +112,7 @@ void HAL_DAC_MspDeInit(DAC_HandleTypeDef* dacHandle)
 }
 
 /* USER CODE BEGIN 1 */
-
+void MX_DAC_DeInit(void){
+  HAL_DAC_MspDeInit(&hdac);
+}
 /* USER CODE END 1 */

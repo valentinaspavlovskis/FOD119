@@ -269,18 +269,18 @@ static uint8_t FLASH_If_Read_Buff (uint32_t SectorAddress,unsigned char *Buffer,
 void drv_LoadCalTable(void){
   if(ReadCalibration(&CalibrationValues)){
     if(CalibrationValues.cbMagic == MAGIC){
-      cal_coef = CalibrationValues.cbCalCoef;
+      //cal_coef = CalibrationValues.cbCalCoef;
     }
   }
 }
 
 uint16_t drv_SaveCalTable(void){ 
-  CalibrationValues.cbCalCoef = cal_coef;
+  //CalibrationValues.cbCalCoef = cal_coef;
   return WriteCalibration(&CalibrationValues);
 }
 
 void SetCalPowerWL(uint16_t wl){
-  CalibrationValues.cbWL = wl;
+  //CalibrationValues.cbWL = wl;
 }
 
 void SetCalValue(float val){

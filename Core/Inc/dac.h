@@ -41,7 +41,7 @@ extern DAC_HandleTypeDef hdac;
 void MX_DAC_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void MX_DAC_DeInit(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

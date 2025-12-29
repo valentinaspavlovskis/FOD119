@@ -59,8 +59,8 @@
 #define USBD_VID               0x273e
 #define USBD_LANGID_STRING     1033
 #define USBD_MANUFACTURER_STRING     "Lifodas"
-#define USBD_PID_FS     0x1000
-#define USBD_PRODUCT_STRING_FS     "Power meter"
+#define USBD_PID_FS     0x0025
+#define USBD_PRODUCT_STRING_FS     "Tracer MTP"
 #define USBD_SERIALNUMBER_STRING_FS     "00000000001A"
 #define USBD_CONFIGURATION_STRING_FS     "Remote Config"
 #define USBD_INTERFACE_STRING_FS     "Remote Interface"

@@ -28,12 +28,17 @@
 #include "kernel.h"
 #include "memory.h"
 #include "os_keyb.h"
+#include "optic_msg_type.h"
 #include "usb_device.h"
 #include "iwdg.h"
 #include "usbd_fod.h"
 #include "usbd_fod_bot.h"
 #include "usbd_fod_desc.h"
 #include "usb_fod_device.h"
+#include "drv_optic.h"
+#include "kernel_msg_type.h"
+#include "optic_msg_type.h"
+#include "uart_msg_type.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,7 +48,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+extern uint8_t starting_flag;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,7 +58,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
+uint8_t power_release = 0;
 /* USB Present Flag */
 uint8_t usb_present = 0;
 uint8_t UsbKeybLockFlag = 0;
@@ -86,7 +91,6 @@ void UART_stdout_func(void const * argument);
 void appTaskOptic(void const * argument);
 void appBulkUSB(void const * argument);
 
-extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* GetIdleTaskMemory prototype (linked to static allocation support) */
@@ -184,16 +188,91 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-  /* init code for USB_DEVICE */
-  //MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
-  kernel_default_tsk_init();
+  uint8_t key_buf[3];
+  /* Clear Key buffer */
+  key_buf[0]=key_buf[1]=key_buf[2]=0;
+  
+  //kernel_default_tsk_init();
   
 /* init code for USB_DEVICE */
   BOARD_USB_FOD_Init();
   /* Infinite loop */
   for(;;)
   {
+    
+    osEvent event;
+    uint8_t SendBuffer[2];
+    event = osMessageGet(kernelQueueHandle, 0);
+    if(event.status == osEventMessage){
+      uint32_t q_msg = event.value.v;
+      kernel_msg_t* kernel_msg;
+      kernel_msg_t msg_l;
+      if(q_msg & 0xFFFF0000){
+        /* use adders to struct */
+        kernel_msg = (kernel_msg_t *)event.value.v;
+      }else{
+        msg_l.id = (WMTypeDef)q_msg;
+        msg_l.p1 = 0;
+        msg_l.p2 = 0;
+        kernel_msg = &msg_l; 
+      }
+      
+      switch(kernel_msg->id){  
+        case MSG_IDLE: 
+          {  
+            
+          }
+          break;
+        case MSG_INIT:
+        {
+          kernel_default_tsk_init();
+        }
+        break;
+        case MSG_POWER_OFF:
+          {
+            IAD_USB_DEVICE_DeInit();
+            for(;;){
+              if(power_release){
+                //wait for release
+                if(!os_keyb_KeyGet(Key_PWR)){
+                  power_release = 0;
+                }
+                osDelay(1);
+//              }else if(HW_IS_CHARGER_CONNECTED()){
+//                //wait for power on
+//                if(os_keyb_KeyGet(Key_PWR)){
+//                  starting_flag = 1;
+//                  kernel_send_msg(MSG_INIT, 0, 0, 1);
+//                  break;
+//                }
+//                osDelay(1);
+              }else{
+                vTaskSuspendAll();
+                SHUT_DOWN();
+                for(;;){
+                }
+              }
+            }
+          }
+        
+          case MSG_USB_READY:      
+            {
+            
+            }break;
+            
+          case MSG_USB_DISCONNECT:
+            {
+              
+            }break;
+          default:
+              break;
+          }
+          if(q_msg & 0xFFFF0000){
+            mem_free(kernel_msg);
+        }    
+     }
+   
     kernel_default_tsk_run();
     osDelay(1);
   }
@@ -309,9 +388,64 @@ void UART_stdout_func(void const * argument)
 void appTaskOptic(void const * argument)
 {
   /* USER CODE BEGIN appTaskOptic */
+  osEvent event;
+  uint16_t ch;
+  
   /* Infinite loop */
   for(;;)
   {
+    event = osMessageGet(opticQueueHandle, 0);
+    if(event.status == osEventMessage){
+      uint32_t q_msg = event.value.v;
+      optic_msg_t* optic_msg;
+      optic_msg_t msg_l;
+      if(q_msg & 0xFFFF0000){
+          /* use adders to struct */
+          optic_msg = (optic_msg_t *)event.value.v;
+        }else{
+          msg_l.id = (OsOptic_TypeDef)q_msg;
+          msg_l.p1 = 0;
+          msg_l.p2 = 0;
+          optic_msg = &msg_l; 
+        }  
+      switch(optic_msg->id){  
+          case OPTIC_MSG_IDLE: 
+            {  
+              
+            }
+            break;
+          case OPTIC_MSG_MSG_CHANNEL_READ:      
+            {
+            
+            }break;
+            
+          case OPTIC_MSG_MSG_CHANNEL_SET:
+            {
+              uint16_t channal = ((uint16_t)optic_msg->p1);
+              ch = channal;
+              drv_Optic_SetChannel(ch);
+            }break;
+          case OPTIC_MSG_MSG_UPDATE_DAC:
+              {
+                while(FODUSBRequest){
+                  osDelay(1);
+                }
+                vTaskSuspend (usbTaskHandle);
+                drv_Optic_Update_DAC();
+                vTaskResume (usbTaskHandle);
+              }break;
+          case OPTIC_MSG_MSG_READ_DAC:
+            {
+            
+            }break;
+          default:
+            break;
+        }
+        if(q_msg & 0xFFFF0000){
+          mem_free(optic_msg);
+        }    
+      }
+  
     osDelay(1);
   }
   /* USER CODE END appTaskOptic */
@@ -355,6 +489,103 @@ void appBulkUSB(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+void suspendKernelTask(void){
+  vTaskSuspend (defaultTaskHandle);
+}
 
+void resumeKernelTask(void){
+  vTaskResume (defaultTaskHandle);
+}
+                
+void SetPowerButtonOn(void){                   
+ power_release = 1;
+}
+
+/**
+* @brief Put a Message to a kernel Queue.
+* @param  queue_id  message queue ID
+* @param  p1  message information.
+* @param  p2  additional information.
+* @param  p3  using struct bit.
+* @retval none.
+* @note  after get massage each time must by call mem_free
+*/
+int8_t optic_send_msg(OsOptic_TypeDef id, uint32_t p1, uint32_t p2, int8_t use_alloc)
+{
+  if(use_alloc){
+    optic_msg_t *msg = mem_malloc(sizeof(optic_msg_t));
+    //assert_m(msg);
+    msg->id = id;
+    msg->p1 = p1;
+    msg->p2 = p2;
+    if (osMessagePut(opticQueueHandle, (uint32_t)msg, 0) != osOK){
+      mem_free(msg);
+      return 1;
+    }
+  }else{
+    if (osMessagePut(opticQueueHandle, id, 0) != osOK){
+      return 1;
+    }
+  }
+  return 0;
+} 
+
+/**
+* @brief Put a Message to a kernel Queue.
+* @param  queue_id  message queue ID
+* @param  p1  message information.
+* @param  p2  additional information.
+* @param  p3  using struct bit.
+* @retval none.
+* @note  after get massage each time must by call mem_free
+*/
+int8_t kernel_send_msg(WMTypeDef id, uint32_t p1, uint32_t p2, int8_t use_alloc)
+{
+  if(use_alloc){
+    kernel_msg_t *msg = mem_malloc(sizeof(kernel_msg_t));
+    //assert_m(msg);
+    msg->id = id;
+    msg->p1 = p1;
+    msg->p2 = p2;
+    if (osMessagePut(kernelQueueHandle, (uint32_t)msg, 0) != osOK){
+      mem_free(msg);
+      return 1;
+    }
+  }else{
+    if (osMessagePut(kernelQueueHandle, id, 0) != osOK){
+      return 1;
+    }
+  }
+  return 0;
+}
+
+/**
+* @brief Put a Message to a kernel Queue.
+* @param  queue_id  message queue ID
+* @param  p1  message information.
+* @param  p2  additional information.
+* @param  p3  using struct bit.
+* @retval none.
+* @note  after get massage each time must by call mem_free
+*/
+int8_t uart_send_msg(UARTMTypeDef id, uint32_t p1, uint32_t p2, int8_t use_alloc)
+{
+  if(use_alloc){
+    uart_msg_t *msg = mem_malloc(sizeof(uart_msg_t));
+    //assert_m(msg);
+    msg->id = id;
+    msg->p1 = p1;
+    msg->p2 = p2;
+    if (osMessagePut(stdout_queueHandle, (uint32_t)msg, 0) != osOK){
+      mem_free(msg);
+      return 1;
+    }
+  }else{
+    if (osMessagePut(stdout_queueHandle, id, 0) != osOK){
+      return 1;
+    }
+  }
+  return 0;
+}
 /* USER CODE END Application */
 

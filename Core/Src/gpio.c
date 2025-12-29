@@ -67,8 +67,8 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, LD_CH9_Pin|LD_CH10_Pin|UC_PWROFF_Pin|PWR_MODE_Pin
-                          |LD_CH1_Pin|LD_CH2_Pin|LD_CH3_Pin|LD_CH4_Pin
-                          |LD_CH5_Pin|LD_CH6_Pin|LD_CH7_Pin|LD_CH8_Pin, GPIO_PIN_RESET);
+                          |LD_CH2_Pin|LD_CH3_Pin|LD_CH4_Pin|LD_CH5_Pin
+                          |LD_CH6_Pin|LD_CH7_Pin|LD_CH8_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : SW_PWR__Pin SW_UP__Pin SW_DOWN__Pin */
   GPIO_InitStruct.Pin = SW_PWR__Pin|SW_UP__Pin|SW_DOWN__Pin;
@@ -113,11 +113,11 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LD_CH9_Pin LD_CH10_Pin UC_PWROFF_Pin PWR_MODE_Pin
-                           LD_CH1_Pin LD_CH2_Pin LD_CH3_Pin LD_CH4_Pin
-                           LD_CH5_Pin LD_CH6_Pin LD_CH7_Pin LD_CH8_Pin */
+                           LD_CH2_Pin LD_CH3_Pin LD_CH4_Pin LD_CH5_Pin
+                           LD_CH6_Pin LD_CH7_Pin LD_CH8_Pin */
   GPIO_InitStruct.Pin = LD_CH9_Pin|LD_CH10_Pin|UC_PWROFF_Pin|PWR_MODE_Pin
-                          |LD_CH1_Pin|LD_CH2_Pin|LD_CH3_Pin|LD_CH4_Pin
-                          |LD_CH5_Pin|LD_CH6_Pin|LD_CH7_Pin|LD_CH8_Pin;
+                          |LD_CH2_Pin|LD_CH3_Pin|LD_CH4_Pin|LD_CH5_Pin
+                          |LD_CH6_Pin|LD_CH7_Pin|LD_CH8_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

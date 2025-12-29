@@ -1167,6 +1167,12 @@
                     <name>$PROJ_DIR$\..\APP\crc16.c</name>
                 </file>
                 <file>
+                    <name>$PROJ_DIR$\..\APP\drv_dac.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\APP\drv_dac.h</name>
+                </file>
+                <file>
                     <name>$PROJ_DIR$\..\APP\drv_eeprom.c</name>
                 </file>
                 <file>
@@ -1179,10 +1185,19 @@
                     <name>$PROJ_DIR$\..\APP\drv_keyb.h</name>
                 </file>
                 <file>
+                    <name>$PROJ_DIR$\..\APP\drv_optic.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\APP\drv_optic.h</name>
+                </file>
+                <file>
                     <name>$PROJ_DIR$\..\APP\kernel.c</name>
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\APP\kernel.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\APP\memory.c</name>
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\APP\os_keyb.c</name>

@@ -179,6 +179,24 @@ void IAD_USB_DEVICE_Init(void)
   /* USER CODE END USB_DEVICE_Init_PostTreatment */
 }
 
+void IAD_USB_DEVICE_DeInit(void){
+
+  PCD_HandleTypeDef *hpcd = (PCD_HandleTypeDef *)hUsbDeviceFS.pData;
+
+  if (hpcd != NULL)
+  {
+      if (HAL_PCD_DevDisconnect(hpcd) != HAL_OK)
+      {
+        Error_Handler();
+      }
+      if (USBD_DeInit(&hUsbDeviceFS) != USBD_OK)
+      {
+        Error_Handler();
+      }
+  }
+  
+}
+
 /**
   * @brief  Get pointer to Frimware Version String.
   * @param  None.

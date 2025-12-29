@@ -23,6 +23,10 @@ void SetUnLockKeyb(void);
 int8_t GetKeybLock(void);
 
 
+void suspendKernelTask(void);
+void resumeKernelTask(void);
+
+void SetPowerButtonOn(void);
 #ifdef __cplusplus
 }
 #endif
