@@ -59,10 +59,10 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define SW_PWR__Pin GPIO_PIN_2
 #define SW_PWR__GPIO_Port GPIOE
-#define SW_UP__Pin GPIO_PIN_3
-#define SW_UP__GPIO_Port GPIOE
-#define SW_DOWN__Pin GPIO_PIN_4
+#define SW_DOWN__Pin GPIO_PIN_3
 #define SW_DOWN__GPIO_Port GPIOE
+#define SW_UP__Pin GPIO_PIN_4
+#define SW_UP__GPIO_Port GPIOE
 #define LED_R_Pin GPIO_PIN_5
 #define LED_R_GPIO_Port GPIOE
 #define LED_G_Pin GPIO_PIN_6
@@ -150,7 +150,6 @@ void Error_Handler(void);
 #define LD_ON_HIGH()  HAL_GPIO_WritePin(LD_ON_GPIO_Port, LD_ON_Pin, GPIO_PIN_SET)
 #define LD_ON_LOW()   HAL_GPIO_WritePin(LD_ON_GPIO_Port, LD_ON_Pin, GPIO_PIN_RESET)
 
-
 #define LED_CH1_HIGH()  HAL_GPIO_WritePin(LED_CH1_GPIO_Port, LED_CH1_Pin, GPIO_PIN_SET)
 #define LED_CH1_LOW()   HAL_GPIO_WritePin(LED_CH1_GPIO_Port, LED_CH1_Pin, GPIO_PIN_RESET)
 
@@ -199,13 +198,19 @@ void Error_Handler(void);
 #define LED_CH16_HIGH()  HAL_GPIO_WritePin(LED_CH16_GPIO_Port, LED_CH16_Pin, GPIO_PIN_SET)
 #define LED_CH16_LOW()   HAL_GPIO_WritePin(LED_CH16_GPIO_Port, LED_CH16_Pin, GPIO_PIN_RESET)
 
+#define LED_AUTO_HIGH()  HAL_GPIO_WritePin(LED_CH_MODE_GPIO_Port, LED_CH_MODE_Pin, GPIO_PIN_SET)
+#define LED_AUTO_LOW()   HAL_GPIO_WritePin(LED_CH_MODE_GPIO_Port, LED_CH_MODE_Pin, GPIO_PIN_RESET)
+
 #define SHUT_DOWN() HAL_GPIO_WritePin(UC_PWROFF_GPIO_Port, UC_PWROFF_Pin, GPIO_PIN_SET);
+
+#define LD_PWREN_HIGH() HAL_GPIO_WritePin(LD_PWREN_GPIO_Port, LD_PWREN_Pin, GPIO_PIN_SET);
+#define LD_PWREN_LOW() HAL_GPIO_WritePin(LD_PWREN_GPIO_Port, LD_PWREN_Pin, GPIO_PIN_RESET);
+
 
 /* Is Charger Connected */
 //#define HW_IS_CHARGER_CONNECTED()  (HAL_GPIO_ReadPin(CHG_PGOOD_GPIO_Port, CHG_PGOOD_Pin))
 
 /* USER CODE END Private defines */
-
 
 #ifdef __cplusplus
 }

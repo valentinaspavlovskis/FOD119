@@ -40,10 +40,13 @@ void drv_dac_Init(void)
   * @param  None.
   * @retval None
   */
-void drv_dac_set_(uint16_t value)
+uint8_t drv_dac_set_(uint16_t value)
 {
   if(value <= 4095){
     //dac_value = value;
     HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, value);
+  }else{
+    return 1;
   }
+  return 0;
 }

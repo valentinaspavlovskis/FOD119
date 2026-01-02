@@ -37,7 +37,7 @@
 /* Firmware version */
 const uint8_t* default_firmware_version = "v0.0.01";
 /* Default Product name */
-const uint8_t* default_product_name = "Power meter";
+const uint8_t* default_product_name = "MTP Tracer";
 /* Default Serial Number */
 const uint8_t* default_serial_number = "01234567";
 /* USER CODE END PV */

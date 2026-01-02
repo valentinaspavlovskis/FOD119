@@ -34,12 +34,15 @@ void drv_Optic_SetDAC(uint16_t value);
 
 uint8_t drv_mems_pwr_ctrl(uint8_t state);
 
-void drv_Optic_Update_DAC();
+uint8_t drv_Optic_Update_DAC();
+uint16_t* drv_Optic_GetDAC(void);
 
 void drv_Optic_Test_DAC();
 
 void drv_Optic_Print_DAC();
 void SetDefault_CH_WL();
+uint8_t drv_Optic_write_cal_val(uint8_t ch, uint16_t value);
+uint8_t drv_Optic_read_cal_val(uint8_t ch, uint16_t *value);
 /* External variables --------------------------------------------------------*/
 
 #endif  /*__DRV_OPTIC_H*/

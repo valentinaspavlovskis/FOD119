@@ -37,7 +37,6 @@
 #include "usb_fod_device.h"
 #include "drv_optic.h"
 #include "kernel_msg_type.h"
-#include "optic_msg_type.h"
 #include "uart_msg_type.h"
 /* USER CODE END Includes */
 
@@ -189,20 +188,19 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
-  uint8_t key_buf[3];
-  /* Clear Key buffer */
-  key_buf[0]=key_buf[1]=key_buf[2]=0;
+//  uint8_t key_buf[3];
+//  /* Clear Key buffer */
+//  key_buf[0]=key_buf[1]=key_buf[2]=0;
   
   //kernel_default_tsk_init();
-  
-/* init code for USB_DEVICE */
-  BOARD_USB_FOD_Init();
+  kernel_send_msg(MSG_INIT, 0, 0, 1);
+
   /* Infinite loop */
   for(;;)
   {
     
     osEvent event;
-    uint8_t SendBuffer[2];
+    //uint8_t SendBuffer[2];
     event = osMessageGet(kernelQueueHandle, 0);
     if(event.status == osEventMessage){
       uint32_t q_msg = event.value.v;
@@ -232,6 +230,7 @@ void StartDefaultTask(void const * argument)
         case MSG_POWER_OFF:
           {
             IAD_USB_DEVICE_DeInit();
+            drv_Optic_DeInit();
             for(;;){
               if(power_release){
                 //wait for release

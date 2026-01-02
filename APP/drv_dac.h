@@ -30,7 +30,7 @@ void drv_dac_DeInit(void);
 void drv_dac_Init(void);
 
 
-void drv_dac_set_(uint16_t value);
+uint8_t drv_dac_set_(uint16_t value);
 
 #endif  /*__DRV_DAC_H*/
 

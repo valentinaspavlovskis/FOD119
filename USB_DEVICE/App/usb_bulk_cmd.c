@@ -13,6 +13,7 @@
 #include <string.h>
 #include "adc.h"
 //#include "calibration.h"
+#include "optic_msg_type.h"
 #include "usb_device.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -32,14 +33,21 @@ extern int32_t Temperature;
 static int8_t usb_bulk_cmd_err(void * buf, uint32_t *n);
 static int8_t usb_bulk_proc(void * buf, uint16_t addr, uint32_t *n, int8_t dir);
 
-static int8_t usb_mems_cmd_read_device_info(void * buf, uint32_t *n);
-static int8_t usb_bulk_cmd_adc_read(void * buf, uint32_t *n);
-static int8_t usb_bulk_cmd_power_read(void * buf, uint32_t *n);
-static int8_t usb_bulk_cmd_cal_get(void * buf, uint32_t *n);
+static int8_t usb_cmd_read_device_info(void * buf, uint32_t *n);
+
+static int8_t usb_cmd_save_cal_table(void * buf, uint32_t *n);
+static int8_t usb_cmd_read_cal_val(void * buf, uint32_t *n);
+static int8_t usb_cmd_write_cal_val(void * buf, uint32_t *n);
+
+static int8_t usb_cmd_set_dac_value(void * buf, uint32_t *n);
+static int8_t usb_cmd_get_dac_value(void * buf, uint32_t *n);
 
 static int8_t usb_bulk_cmd_ctrl_led(void * buf, uint32_t *n);
 static int8_t usb_bulk_cmd_cal_set(void * buf, uint32_t *n);
 static int8_t usb_bulk_cmd_cal_save(void * buf, uint32_t *n);
+
+static int8_t usb_cmd_get_channal(void * buf, uint32_t *n);
+static int8_t usb_cmd_set_channal(void * buf, uint32_t *n);
 
 #define USB_BULK_FUNC_N (16)
 
@@ -47,11 +55,11 @@ static int8_t usb_bulk_cmd_cal_save(void * buf, uint32_t *n);
 const usb_bulk_cmd_func_t usb_bulk_cmd_func_array[USB_BULK_FUNC_N] = {
   /* addr,    read cb,                          write cb */
   { 0x0000, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
-  { 0x0001, &usb_mems_cmd_read_device_info,     &usb_bulk_cmd_err},   
-  { 0x0002, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err}, 
-  { 0x0003, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err}, 
-  { 0x0004, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
-  { 0x0005, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
+  { 0x0001, &usb_cmd_read_device_info,          &usb_bulk_cmd_err},   
+  { 0x0002, &usb_cmd_read_cal_val,              &usb_cmd_write_cal_val}, 
+  { 0x0003, &usb_bulk_cmd_err,                  &usb_cmd_save_cal_table}, 
+  { 0x0004, &usb_cmd_get_dac_value,             &usb_cmd_set_dac_value},
+  { 0x0005, &usb_cmd_get_channal,               &usb_cmd_set_channal},
   { 0x0006, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
   { 0x0007, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
   { 0x0008, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
@@ -107,7 +115,7 @@ static int8_t usb_bulk_cmd_err(void * buf, uint32_t *n)
 
 //==============================================================================
 
-static int8_t usb_mems_cmd_read_device_info(void * buf, uint32_t *n){
+static int8_t usb_cmd_read_device_info(void * buf, uint32_t *n){
 /*  
   info_verson 
   device_name
@@ -135,48 +143,142 @@ static int8_t usb_mems_cmd_read_device_info(void * buf, uint32_t *n){
 }
 
 
+static int8_t usb_cmd_save_cal_table(void * buf, uint32_t *n){
+  int8_t err;
+
+#ifdef USE_DEBUG    
+  //printf("Save\n");
+#endif  
+  err = drv_Optic_reg_SaveCalTable();
+
+  return (err != 0);
+}
+
+static int8_t usb_cmd_get_dac_value(void * buf, uint32_t *n){
+  union{
+    uint16_t read_data;
+    uint8_t b[2];    
+  }d;
+  uint8_t len = 0;
+
+  vTaskSuspendAll();
+  
+  d.read_data = *(uint16_t *)drv_Optic_GetDAC();
+  memcpy(&((uint8_t*)buf)[len],d.b,2);
+  len = 2;
+  
+  *n = len;
+  
+  xTaskResumeAll();
+  
+  return 0;
+}
+
+
+static int8_t usb_cmd_set_dac_value(void * buf, uint32_t *n){
+  uint16_t dac = 0;
+
+  if (*n != 2){
+    return 1;
+  }
+  
+  dac = *((uint16_t*)buf + 0);
+  drv_Optic_SetDAC(dac);
+  return drv_Optic_Update_DAC();
+}
+
+
+static int8_t usb_cmd_get_channal(void * buf, uint32_t *n){
+  uint8_t len = 0;
+  
+  *(uint16_t*)buf = drv_Optic_GetChannel();
+  len = 2;
+  
+  *n = len;
+  
+  return 0;
+}
+
+static int8_t usb_cmd_set_channal(void * buf, uint32_t *n){
+  uint16_t channal = 0xffff;
+  
+  if (*n != 2){
+    return 1;
+  }
+  channal = *((uint16_t*)buf);
+  
+  if(channal < drv_Optic_GetChannelNr()){
+    
+    optic_send_msg(OPTIC_MSG_MSG_CHANNEL_SET, channal, 0, 1);
+#ifdef USE_DEBUG    
+    //printf("ch = %d\n",channal);
+#endif     
+    return 0;
+  }else{
+    return 1;
+  }
+}
+
+
+static int8_t usb_cmd_write_cal_val(void * buf, uint32_t *n){
+  uint16_t CH = 0;
+  
+  if (*n != 4){
+    return 1;
+  }
+  
+  //get channel val
+  CH = *((uint16_t*)buf);
+  if(CH > OPTIC_OSW_CHANNELS){
+    return 1;
+  }
+  
+  //get value to cal table
+  uint16_t value = *((uint16_t*)buf + 1);
+  
+  return drv_Optic_write_cal_val(CH, value);
+}
+
+static int8_t usb_cmd_read_cal_val(void * buf, uint32_t *n){
+  union{
+    uint16_t read_data;
+    uint8_t b[2];    
+  }d;
+  int8_t ret_val = 1;
+  uint8_t len = 0;
+  uint16_t CH = 0;
+  if (*n != 2){
+    return 1;
+  }
+  
+  //get channel
+  CH = *((uint16_t*)buf + 0);
+  if(CH > OPTIC_OSW_CHANNELS){
+    return 1;
+  }
+  
+  //read value from cal table
+  ret_val = drv_Optic_read_cal_val(CH, &d.read_data);
+  memcpy(&((uint8_t*)buf)[len],d.b,2);
+  len += 2;
+ 
+  *n = len;
+  
+  return ret_val;
+}
+
+
+
+
+
+//==============================================================//
 static int8_t usb_bulk_cmd_ctrl_led(void * buf, uint32_t *n){
   uint8_t led_reg = 0;
   if (*n != 1){
     return 1;
   }
   led_reg = *((uint8_t*)buf + 0);
-//  //========== Led VD5 =============//
-//  if(__TEST_BIT(led_reg,0)){
-//    LED_PASS_G_0_ON();
-//  }else{
-//    LED_PASS_G_0_OFF();
-//  }
-//  
-//  if(__TEST_BIT(led_reg,1)){
-//    LED_PASS_R_0_ON();
-//  }else{
-//    LED_PASS_R_0_OFF();
-//  }
-//  //========== Led VD6 =============//
-//  if(__TEST_BIT(led_reg,2)){
-//    LED_PASS_G_1_ON();
-//  }else{
-//    LED_PASS_G_1_OFF();
-//  }
-//  
-//  if(__TEST_BIT(led_reg,3)){
-//    LED_PASS_R_1_ON();
-//  }else{
-//    LED_PASS_R_1_OFF();
-//  }
-//  //========== Led VD7 =============//
-//  if(__TEST_BIT(led_reg,4)){
-//    LED_PASS_G_2_ON();
-//  }else{
-//    LED_PASS_G_2_OFF();
-//  }
-//  
-//  if(__TEST_BIT(led_reg,5)){
-//    LED_PASS_R_2_ON();
-//  }else{
-//    LED_PASS_R_2_OFF();
-//  }
+
   return 0;
 }
 

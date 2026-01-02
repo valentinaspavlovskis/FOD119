@@ -6,6 +6,7 @@
 #include "drv_optic.h"
 #include "kernel_msg_type.h"
 #include "optic_msg_type.h"
+#include "usb_fod_device.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -14,21 +15,6 @@ extern uint8_t starting_flag;
 uint8_t poweroff_flag  = 0;
 
 int8_t KeybLockFlg = 0;
-
-
-void kernel_default_tsk_init()
-{
-  LED_G_HIGH();
-  
-
-  drv_Optic_Init();
-//LED_CH1_HIGH();
-  { /* DEBUG LOG */
-    //printf("--- Boot finished.---\n");
-  }
-}
-
-
 /* Keyboard Lock Flag */
 uint8_t os_appv0_KeybLockFlg = 0;
 
@@ -55,6 +41,27 @@ typedef enum{
 mode_t curr_mode = mode_cw;
 uint16_t channel;
 
+
+void kernel_default_tsk_init()
+{
+  LED_G_HIGH();
+  
+
+  drv_Optic_Init();
+  
+  /* init code for USB_DEVICE */
+  BOARD_USB_FOD_Init();
+  
+  optic_send_msg(OPTIC_MSG_MSG_CHANNEL_SET, channel, 0, 1);
+//LED_CH1_HIGH();
+  { /* DEBUG LOG */
+    //printf("--- Boot finished.---\n");
+  }
+}
+
+
+
+
 void kernel_default_tsk_run()
 {
   uint32_t ticks = osKernelSysTick();
@@ -74,8 +81,20 @@ void kernel_default_tsk_run()
 
           key_pressed_cnt_up++;
           
+          if(auto_sw_channal_on){
+              auto_sw_channal_on = 0;
+              LED_AUTO_LOW();
+          }
           /* Set and print OSW channel */
           channel = drv_Optic_GetChannel();
+          
+          channel++;
+          if(channel >= drv_Optic_GetChannelNr()){
+            auto_sw_channal_on = 1;
+            LED_AUTO_HIGH();
+            channel = 0;
+          }
+            
           optic_send_msg(OPTIC_MSG_MSG_CHANNEL_SET, channel, 0, 1);
         }else{
 
@@ -99,13 +118,24 @@ void kernel_default_tsk_run()
           /* Set and print OSW channel */
           channel = drv_Optic_GetChannel();
           if(channel == 0){
-            uint16_t ch  = drv_Optic_GetChannelNr();
-            if(drv_Optic_GetChannelNr() > 0){
-              channel = drv_Optic_GetChannelNr() - 1;
+            if(auto_sw_channal_on){
+              uint16_t ch  = drv_Optic_GetChannelNr();
+              if(drv_Optic_GetChannelNr() > 0){
+                channel = drv_Optic_GetChannelNr() - 1;
+              }else{
+                channel = drv_Optic_GetChannelNr();
+              }
+              auto_sw_channal_on = 0;
+              LED_AUTO_LOW();
             }else{
-              channel = drv_Optic_GetChannelNr();
+              auto_sw_channal_on = 1;
+              LED_AUTO_HIGH();
             }
           }else{
+            if(auto_sw_channal_on){
+              auto_sw_channal_on = 0;
+              LED_AUTO_LOW();
+            }
             channel--;
           }
           optic_send_msg(OPTIC_MSG_MSG_CHANNEL_SET, channel, 0, 1);
@@ -175,16 +205,16 @@ void kernel_default_tsk_run()
   if ((ticks - DevTicksRef100ms) >= 100){ /* 100 ms */
     DevTicksRef100ms = ticks;
     
-    drv_Optic_SetDAC(DAC_val);
-    
-    //suspendKernelTask();
-    optic_send_msg(OPTIC_MSG_MSG_UPDATE_DAC, 0, 0, 1);
-    //resumeKernelTask();
-    
-    DAC_val+=10;
-    if(DAC_val > 4095){
-      DAC_val = 0;
-    }
+//    drv_Optic_SetDAC(DAC_val);
+//    
+//    //suspendKernelTask();
+//    optic_send_msg(OPTIC_MSG_MSG_UPDATE_DAC, 0, 0, 1);
+//    //resumeKernelTask();
+//    
+//    DAC_val+=10;
+//    if(DAC_val > 4095){
+//      DAC_val = 0;
+//    }
   }
 
   if((ticks - DevTicksRef500ms) >= 500){ /* 500ms */
@@ -194,7 +224,15 @@ void kernel_default_tsk_run()
   if((ticks - DevTicksRef1s) >= 1000){ /* 1s */
     DevTicksRef1s = ticks;
     
-    
+    if(auto_sw_channal_on){
+        /* Set and print OSW channel */
+        channel = drv_Optic_GetChannel();
+        
+        channel++;
+        if(channel >= drv_Optic_GetChannelNr()){channel = 0;}
+          
+        optic_send_msg(OPTIC_MSG_MSG_CHANNEL_SET, channel, 0, 1);
+    }
   }
 }
 
