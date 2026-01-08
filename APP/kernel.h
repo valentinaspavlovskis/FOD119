@@ -27,6 +27,7 @@ void suspendKernelTask(void);
 void resumeKernelTask(void);
 
 void SetPowerButtonOn(void);
+void PowerOffProc(void);
 #ifdef __cplusplus
 }
 #endif

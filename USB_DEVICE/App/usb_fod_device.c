@@ -94,6 +94,11 @@ void BOARD_USB_FOD_Init()
   
   USBD_Start(&hUsbFodDeviceFS);
 }
+
+void BOARD_USB_FOD_DeInit()
+{
+  USBD_Stop(&hUsbFodDeviceFS);
+}
 /* USER CODE END 1 */
 
 

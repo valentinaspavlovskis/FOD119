@@ -77,6 +77,8 @@ void Error_Handler(void);
 #define LED_CH13_GPIO_Port GPIOC
 #define LED_CH12_Pin GPIO_PIN_3
 #define LED_CH12_GPIO_Port GPIOC
+#define BAT_SENSE_Pin GPIO_PIN_1
+#define BAT_SENSE_GPIO_Port GPIOA
 #define LED_CH11_Pin GPIO_PIN_4
 #define LED_CH11_GPIO_Port GPIOC
 #define LED_CH10_Pin GPIO_PIN_5
@@ -147,6 +149,8 @@ void Error_Handler(void);
 #define LED_G_HIGH()  HAL_GPIO_WritePin(LED_G_GPIO_Port, LED_G_Pin, GPIO_PIN_SET)
 #define LED_G_LOW()   HAL_GPIO_WritePin(LED_G_GPIO_Port, LED_G_Pin, GPIO_PIN_RESET)
 
+#define LED_G_TOGGLE()  HAL_GPIO_TogglePin(LED_G_GPIO_Port, LED_G_Pin)
+
 #define LD_ON_HIGH()  HAL_GPIO_WritePin(LD_ON_GPIO_Port, LD_ON_Pin, GPIO_PIN_SET)
 #define LD_ON_LOW()   HAL_GPIO_WritePin(LD_ON_GPIO_Port, LD_ON_Pin, GPIO_PIN_RESET)
 
@@ -206,7 +210,10 @@ void Error_Handler(void);
 #define LD_PWREN_HIGH() HAL_GPIO_WritePin(LD_PWREN_GPIO_Port, LD_PWREN_Pin, GPIO_PIN_SET);
 #define LD_PWREN_LOW() HAL_GPIO_WritePin(LD_PWREN_GPIO_Port, LD_PWREN_Pin, GPIO_PIN_RESET);
 
+#define LED_R_HIGH()  HAL_GPIO_WritePin(LED_R_GPIO_Port, LED_R_Pin, GPIO_PIN_SET)
+#define LED_R_LOW()   HAL_GPIO_WritePin(LED_R_GPIO_Port, LED_R_Pin, GPIO_PIN_RESET)
 
+#define LED_R_TOGGLE()  HAL_GPIO_TogglePin(LED_R_GPIO_Port, LED_R_Pin)
 /* Is Charger Connected */
 //#define HW_IS_CHARGER_CONNECTED()  (HAL_GPIO_ReadPin(CHG_PGOOD_GPIO_Port, CHG_PGOOD_Pin))
 

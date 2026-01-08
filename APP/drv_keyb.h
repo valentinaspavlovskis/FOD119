@@ -6,6 +6,19 @@
 #include "stm32l0xx_hal.h"
 
 /* Exported types ------------------------------------------------------------*/
+ /* Number of keys in keyboard */
+#define KEYB_N ( 3 )
+
+/** 
+  * @brief  Keyboard State structure definition
+  */ 
+typedef struct KeybState_t_
+{
+  uint32_t CodeBitMap; /* Bitmap of keys */
+  uint32_t LockBitFlg;  /* Locked Key Flag */  
+  uint16_t PressedCnt[KEYB_N]; /* Pressed Key counter */
+} KeybState_t;
+
 /** 
   * @brief  Keyboard Keys enumeration
   */ 

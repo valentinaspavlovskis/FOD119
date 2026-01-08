@@ -63,6 +63,7 @@
 /* USER CODE BEGIN INCLUDE */
 /** USB Device initialization function. */
 void BOARD_USB_FOD_Init();
+void BOARD_USB_FOD_DeInit();
 /* USER CODE END INCLUDE */
 
 /** @addtogroup USBD_OTG_DRIVER

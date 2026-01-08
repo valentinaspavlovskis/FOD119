@@ -4,8 +4,7 @@
 #include "main.h"
 
 /* Private define ------------------------------------------------------------*/
- /* Number of keys in keyboard */
-#define KEYB_N ( 3 )
+
 
 /* Keyboard ports */
 #define KEYB_PORT_UP    SW_UP__GPIO_Port
@@ -26,15 +25,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 
-/** 
-  * @brief  Keyboard State structure definition
-  */ 
-typedef struct KeybState_t_
-{
-  uint32_t CodeBitMap; /* Bitmap of keys */
-  uint32_t LockBitFlg;  /* Locked Key Flag */  
-  uint16_t PressedCnt[KEYB_N]; /* Pressed Key counter */
-} KeybState_t;
+
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/

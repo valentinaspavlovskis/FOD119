@@ -19,11 +19,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "dma.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "iwdg.h"
+#include "adc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,6 +47,7 @@
 
 /* USER CODE BEGIN PV */
 uint8_t starting_flag = 0;
+FLASH_OBProgramInitTypeDef r_option_bytes;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -83,13 +86,27 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  HAL_FLASHEx_OBGetConfig(&r_option_bytes);
+  if(r_option_bytes.BORLevel != OB_BOR_LEVEL1){  
+    FLASH_OBProgramInitTypeDef option_bytes;
+    option_bytes.BORLevel = OB_BOR_LEVEL1;
+    option_bytes.OptionType = OPTIONBYTE_BOR;
+    HAL_FLASH_OB_Unlock();
+    HAL_FLASHEx_OBProgram(&option_bytes);
+    HAL_FLASH_OB_Lock();
+  }
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   /* USER CODE BEGIN 2 */
+  MX_ADC_Init();
+  
   starting_flag = 1;
+  
+  HAL_Delay(100);
+  MX_ADC_Start();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in cmsis_os2.c) */

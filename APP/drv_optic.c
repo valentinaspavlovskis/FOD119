@@ -210,7 +210,8 @@ int8_t drv_Optic_SetChannel(uint16_t nr){
   // Select current laser
   HAL_GPIO_WritePin(LDs_Ports[optic_idx_table[optic_osw_ch]], LDs_Pins[optic_idx_table[optic_osw_ch]], GPIO_PIN_RESET);
   
-  osDelay(20);
+  //osDelay(20);
+  osDelay(10);
   
   // Laser on
   LD_ON_HIGH();
@@ -218,6 +219,24 @@ int8_t drv_Optic_SetChannel(uint16_t nr){
   LED_CTRL( 0, curr_ch);
   curr_ch = optic_osw_ch;
   LED_CTRL( 1, curr_ch);  
+  return 0;
+}
+
+int8_t drv_Optic_ToggleChannel(uint16_t nr){
+  if(nr > MAX_ADC_VALUES)
+    return 1;
+  uint16_t optic_osw_ch = nr;
+  HAL_GPIO_TogglePin(LDs_Ports[optic_idx_table[optic_osw_ch]], LDs_Pins[optic_idx_table[optic_osw_ch]]);
+  return 0;
+}
+
+int8_t drv_Optic_ToggleReset(uint16_t nr){
+  if(nr > MAX_ADC_VALUES)
+    return 1;
+  uint16_t optic_osw_ch = nr;
+  // Select current laser
+  HAL_GPIO_WritePin(LDs_Ports[optic_idx_table[optic_osw_ch]], LDs_Pins[optic_idx_table[optic_osw_ch]], GPIO_PIN_RESET);
+  
   return 0;
 }
 
@@ -237,6 +256,26 @@ uint8_t drv_Optic_read_cal_val(uint8_t ch, uint16_t *value){
     return 1;
   
   *value = optic_cal_table[ch];
+  
+  return 0;
+}
+
+uint8_t drv_Optic_write_cal_idx(uint8_t ch, uint16_t idx){
+  if(ch > MAX_ADC_VALUES)
+    return 1;
+  if(idx < MAX_ADC_VALUES){
+    optic_idx_table[ch] = idx;
+  }else{
+    return 1;
+  }
+  return 0;
+}
+
+uint8_t drv_Optic_read_cal_idx(uint8_t ch, uint16_t *idx){
+  if(ch > MAX_ADC_VALUES)
+    return 1;
+  
+  *idx = optic_idx_table[ch];
   
   return 0;
 }

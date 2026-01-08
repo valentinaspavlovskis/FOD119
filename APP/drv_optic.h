@@ -25,6 +25,8 @@ int8_t drv_Optic_probe(void);
 
 uint16_t drv_Optic_GetChannelNr(void);
 int8_t drv_Optic_SetChannel(uint16_t nr);
+int8_t drv_Optic_ToggleChannel(uint16_t nr);
+int8_t drv_Optic_ToggleReset(uint16_t nr);
 uint16_t drv_Optic_GetChannel(void);
 
 uint16_t drv_Optic_reg_SaveCalTable();
@@ -43,6 +45,11 @@ void drv_Optic_Print_DAC();
 void SetDefault_CH_WL();
 uint8_t drv_Optic_write_cal_val(uint8_t ch, uint16_t value);
 uint8_t drv_Optic_read_cal_val(uint8_t ch, uint16_t *value);
+
+uint8_t drv_Optic_write_cal_idx(uint8_t ch, uint16_t idx);
+uint8_t drv_Optic_read_cal_idx(uint8_t ch, uint16_t *idx);
+
+void LED_CTRL( uint8_t ctrl,uint16_t LedIdx );
 /* External variables --------------------------------------------------------*/
 
 #endif  /*__DRV_OPTIC_H*/

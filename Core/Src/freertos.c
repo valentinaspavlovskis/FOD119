@@ -33,7 +33,8 @@
 #include "iwdg.h"
 #include "usbd_fod.h"
 #include "usbd_fod_bot.h"
-#include "usbd_fod_desc.h"
+//#include "usbd_fod_desc.h"
+#include "usb_device.h"
 #include "usb_fod_device.h"
 #include "drv_optic.h"
 #include "kernel_msg_type.h"
@@ -229,12 +230,14 @@ void StartDefaultTask(void const * argument)
         break;
         case MSG_POWER_OFF:
           {
-            IAD_USB_DEVICE_DeInit();
-            drv_Optic_DeInit();
+            PowerOffProc();
             for(;;){
               if(power_release){
                 //wait for release
-                if(!os_keyb_KeyGet(Key_PWR)){
+                //drv_Keyb_KeyPressedGet(Key_PWR);
+                //if(!os_keyb_KeyGet(Key_PWR)){
+                extern KeybState_t KeybState; 
+                if(KeybState.PressedCnt[2] == 0){
                   power_release = 0;
                 }
                 osDelay(1);
@@ -247,7 +250,9 @@ void StartDefaultTask(void const * argument)
 //                }
 //                osDelay(1);
               }else{
-                vTaskSuspendAll();
+                //vTaskSuspendAll();
+                BOARD_USB_FOD_DeInit();
+                osDelay(50);
                 SHUT_DOWN();
                 for(;;){
                 }

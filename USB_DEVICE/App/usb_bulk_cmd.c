@@ -39,15 +39,17 @@ static int8_t usb_cmd_save_cal_table(void * buf, uint32_t *n);
 static int8_t usb_cmd_read_cal_val(void * buf, uint32_t *n);
 static int8_t usb_cmd_write_cal_val(void * buf, uint32_t *n);
 
+static int8_t usb_cmd_read_ch_idx(void * buf, uint32_t *n);
+static int8_t usb_cmd_write_ch_idx(void * buf, uint32_t *n);
+
 static int8_t usb_cmd_set_dac_value(void * buf, uint32_t *n);
 static int8_t usb_cmd_get_dac_value(void * buf, uint32_t *n);
 
-static int8_t usb_bulk_cmd_ctrl_led(void * buf, uint32_t *n);
-static int8_t usb_bulk_cmd_cal_set(void * buf, uint32_t *n);
-static int8_t usb_bulk_cmd_cal_save(void * buf, uint32_t *n);
 
 static int8_t usb_cmd_get_channal(void * buf, uint32_t *n);
 static int8_t usb_cmd_set_channal(void * buf, uint32_t *n);
+
+static int8_t usb_cmd_get_status(void * buf, uint32_t *n);
 
 #define USB_BULK_FUNC_N (16)
 
@@ -60,11 +62,11 @@ const usb_bulk_cmd_func_t usb_bulk_cmd_func_array[USB_BULK_FUNC_N] = {
   { 0x0003, &usb_bulk_cmd_err,                  &usb_cmd_save_cal_table}, 
   { 0x0004, &usb_cmd_get_dac_value,             &usb_cmd_set_dac_value},
   { 0x0005, &usb_cmd_get_channal,               &usb_cmd_set_channal},
-  { 0x0006, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
+  { 0x0006, &usb_cmd_read_ch_idx,               &usb_cmd_write_ch_idx},
   { 0x0007, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
   { 0x0008, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
   { 0x0009, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
-  { 0x000A, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
+  { 0x000A, &usb_cmd_get_status,                &usb_bulk_cmd_err},
   { 0x000B, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
   { 0x000C, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
   { 0x000D, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
@@ -267,133 +269,84 @@ static int8_t usb_cmd_read_cal_val(void * buf, uint32_t *n){
   return ret_val;
 }
 
+static int8_t usb_cmd_write_ch_idx(void * buf, uint32_t *n){
+  uint16_t CH = 0;
+  
+  if (*n != 4){
+    return 1;
+  }
+  
+  //get channel val
+  CH = *((uint16_t*)buf);
+  if(CH > OPTIC_OSW_CHANNELS){
+    return 1;
+  }
+  
+  //get channel index
+  uint16_t idx = *((uint16_t*)buf + 1);
+  
+  return drv_Optic_write_cal_idx(CH, idx);
+}
 
+static int8_t usb_cmd_read_ch_idx(void * buf, uint32_t *n){
+  union{
+    uint16_t read_data;
+    uint8_t b[2];    
+  }d;
+  int8_t ret_val = 1;
+  uint8_t len = 0;
+  uint16_t CH = 0;
+  if (*n != 2){
+    return 1;
+  }
+  
+  //get channel
+  CH = *((uint16_t*)buf + 0);
+  if(CH > OPTIC_OSW_CHANNELS){
+    return 1;
+  }
+  
+  //read channel index
+  ret_val = drv_Optic_read_cal_idx(CH, &d.read_data);
+  memcpy(&((uint8_t*)buf)[len],d.b,2);
+  len += 2;
+ 
+  *n = len;
+  
+  return ret_val;
+}
 
+static int8_t usb_cmd_get_status(void * buf, uint32_t *n){
+  union{
+    uint16_t read_data;
+    uint8_t b[2];    
+  }d;
+  uint8_t len = 0;
+  vTaskSuspendAll();
+  
+  __disable_irq();
+  
+  measurement_t* curr_val = GetMeasurements();
+  
+  d.read_data = curr_val->vbat;
+  memcpy(&((uint8_t*)buf)[len],d.b,2);
+  len += 2;
+  
+  d.read_data = curr_val->soc;
+  memcpy(&((uint8_t*)buf)[len],d.b,2);
+  len += 2;
+  
+  d.read_data = curr_val->temp;
+  memcpy(&((uint8_t*)buf)[len],d.b,2);
+  len += 2;
+  
+  *n = len;
+  
+  __enable_irq();
+  
+  xTaskResumeAll();
+  return 0;
+}
 
 
 //==============================================================//
-static int8_t usb_bulk_cmd_ctrl_led(void * buf, uint32_t *n){
-  uint8_t led_reg = 0;
-  if (*n != 1){
-    return 1;
-  }
-  led_reg = *((uint8_t*)buf + 0);
-
-  return 0;
-}
-
-static int8_t usb_bulk_cmd_adc_read(void * buf, uint32_t *n){
-  union{
-    uint16_t read_data;
-    uint8_t b[2];    
-  }d;
-  uint8_t len = 0;
-  
-  vTaskSuspendAll();
-  
-  //__disable_irq();
-  
-//  measurement_t* curr_val = GetMeasurements();
-//  
-//  d.read_data = curr_val->aout0;
-//  memcpy(&((uint8_t*)buf)[len],d.b,2);
-//  len = 2;
-//  
-//  d.read_data = curr_val->aout1;
-//  memcpy(&((uint8_t*)buf)[len],d.b,2);
-//  len += 2;
-//  
-//  d.read_data = curr_val->aout2;
-//  memcpy(&((uint8_t*)buf)[len],d.b,2);
-//  len += 2;
-//  
-//  d.read_data = curr_val->vbat;
-//  memcpy(&((uint8_t*)buf)[len],d.b,2);
-//  len += 2;
-//  
-//  d.read_data = curr_val->soc;
-//  memcpy(&((uint8_t*)buf)[len],d.b,2);
-//  len += 2;
-//  
-//  d.read_data = curr_val->temp;
-//  memcpy(&((uint8_t*)buf)[len],d.b,2);
-//  len += 2;
-//  
-//  *n = len;
-  
-  //__enable_irq();
-  xTaskResumeAll();
-  return 0;
-}
-
-static int8_t usb_bulk_cmd_power_read(void * buf, uint32_t *n){
-  union{
-    uint16_t read_data;
-    uint8_t b[2];    
-  }d;
-  uint8_t len = 0;
-  
-  vTaskSuspendAll();
-//  measurement_t* curr_val = GetMeasurements();
-//  
-//  uint16_t wl = CalibrationValues.cbWL;
-//  memcpy(&((uint8_t*)buf)[len],&wl,sizeof(uint16_t));
-//  len += sizeof(uint16_t);
-//  
-//  d.read_data = curr_val->aout0;
-//  memcpy(&((uint8_t*)buf)[len],d.b,2);
-//  len += 2;
-//  
-//  float cal_coef = GetCalValue();
-//  memcpy(&((uint8_t*)buf)[len],&cal_coef,sizeof(float));
-//  len += sizeof(float);
-//  
-//  float pwr = -100.0;
-//  
-//  pwr = CalcPower(curr_val->aout0);
-//  
-//  memcpy(&((uint8_t*)buf)[len],&pwr,sizeof(float));
-//  len += sizeof(float);
-  
-  xTaskResumeAll();
-  *n = len;
-  return 0;
-}
-
-static int8_t usb_bulk_cmd_cal_set(void * buf, uint32_t *n){
-  if (*n != 6){
-    return 1;
-  }
-//  uint16_t wl = 0;
-//  float coef = 0.0;
-//  
-//  memcpy(&wl, &((uint8_t*)buf)[0], sizeof(wl));
-//  memcpy(&coef, &((uint8_t*)buf)[2], sizeof(coef));
-//  
-//  SetCalPowerWL(wl);
-//  SetCalValue(coef);
-    
-  return 0;
-}
-
-static int8_t usb_bulk_cmd_cal_get(void * buf, uint32_t *n){
-  uint8_t len = 0;
-//  float coef = GetCalValue();
-//  uint16_t wl = CalibrationValues.cbWL;
-//  memcpy(&((uint8_t*)buf)[0], &wl, 2);
-//  len += 2;
-//  memcpy(&((uint8_t*)buf)[len], &coef, sizeof(coef));
-//  len += 4;
-  
-  *n = len;
-  return 0;  
-}
-
-static int8_t usb_bulk_cmd_cal_save(void * buf, uint32_t *n){
-
-//  if (drv_SaveCalTable() != 0){
-//    return 1;
-//  }
-    
-  return 0;
-}
