@@ -25,6 +25,7 @@ int8_t GetKeybLock(void);
 
 void suspendKernelTask(void);
 void resumeKernelTask(void);
+void kernel_calibration_on();
 
 void SetPowerButtonOn(void);
 void PowerOffProc(void);

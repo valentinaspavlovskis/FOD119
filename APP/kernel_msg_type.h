@@ -5,12 +5,16 @@ typedef enum {
   MSG_ERR = -1,
   MSG_IDLE = 0,
   MSG_INIT,
+  MSG_USB_INIT,
   MSG_USB_READY,
   MSG_USB_DISCONNECT,
+  MSG_CALIBRATION_ON,
   MSG_TIMER_10MS,
   MSG_LCD_TIMER,
   MSG_POWER_PROC, /* battery measurement (each 1-2 sec.) */
   MSG_POWER_OFF,
+  
+  
   
   MSG_HID_DESCRIPTOR_WRITE_BUFF, /* String descriptors */
   MSG_HID_DESCRIPTOR_CTRL, /* String descriptors control: 0-reserved, 1-Product, 2-SN, 3-firmware version */

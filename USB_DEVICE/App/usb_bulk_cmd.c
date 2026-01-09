@@ -14,6 +14,7 @@
 #include "adc.h"
 //#include "calibration.h"
 #include "optic_msg_type.h"
+#include "kernel_msg_type.h"
 #include "usb_device.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -50,6 +51,7 @@ static int8_t usb_cmd_get_channal(void * buf, uint32_t *n);
 static int8_t usb_cmd_set_channal(void * buf, uint32_t *n);
 
 static int8_t usb_cmd_get_status(void * buf, uint32_t *n);
+static int8_t usb_cmd_cal_on(void * buf, uint32_t *n);
 
 #define USB_BULK_FUNC_N (16)
 
@@ -63,7 +65,7 @@ const usb_bulk_cmd_func_t usb_bulk_cmd_func_array[USB_BULK_FUNC_N] = {
   { 0x0004, &usb_cmd_get_dac_value,             &usb_cmd_set_dac_value},
   { 0x0005, &usb_cmd_get_channal,               &usb_cmd_set_channal},
   { 0x0006, &usb_cmd_read_ch_idx,               &usb_cmd_write_ch_idx},
-  { 0x0007, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
+  { 0x0007, &usb_bulk_cmd_err,                  &usb_cmd_cal_on},
   { 0x0008, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
   { 0x0009, &usb_bulk_cmd_err,                  &usb_bulk_cmd_err},
   { 0x000A, &usb_cmd_get_status,                &usb_bulk_cmd_err},
@@ -348,5 +350,12 @@ static int8_t usb_cmd_get_status(void * buf, uint32_t *n){
   return 0;
 }
 
+
+static int8_t usb_cmd_cal_on(void * buf, uint32_t *n){
+  
+  kernel_send_msg(MSG_CALIBRATION_ON, 0, 0, 1);
+  
+  return 0;
+}
 
 //==============================================================//

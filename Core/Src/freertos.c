@@ -62,6 +62,8 @@ uint8_t power_release = 0;
 /* USB Present Flag */
 uint8_t usb_present = 0;
 uint8_t UsbKeybLockFlag = 0;
+uint8_t is_usb_inited = 0;
+uint8_t is_dev_ready = 0;
 /* USB Present Debounce counter */
 uint8_t usb_debounce_cnt;
 extern USBD_HandleTypeDef hUsbDeviceFS;
@@ -162,8 +164,8 @@ void MX_FREERTOS_Init(void) {
   PrdHandle = osThreadCreate(osThread(Prd), NULL);
 
   /* definition and creation of UART_stdout */
-  osThreadDef(UART_stdout, UART_stdout_func, osPriorityIdle, 0, 128);
-  UART_stdoutHandle = osThreadCreate(osThread(UART_stdout), NULL);
+ // osThreadDef(UART_stdout, UART_stdout_func, osPriorityIdle, 0, 128);
+ // UART_stdoutHandle = osThreadCreate(osThread(UART_stdout), NULL);
 
   /* definition and creation of AppOptic */
   osThreadDef(AppOptic, appTaskOptic, osPriorityIdle, 0, 160);
@@ -192,9 +194,9 @@ void StartDefaultTask(void const * argument)
 //  uint8_t key_buf[3];
 //  /* Clear Key buffer */
 //  key_buf[0]=key_buf[1]=key_buf[2]=0;
-  
+  is_usb_inited = 0;
   //kernel_default_tsk_init();
-  kernel_send_msg(MSG_INIT, 0, 0, 1);
+  //kernel_send_msg(MSG_INIT, 0, 0, 1);
 
   /* Infinite loop */
   for(;;)
@@ -226,6 +228,7 @@ void StartDefaultTask(void const * argument)
         case MSG_INIT:
         {
           kernel_default_tsk_init();
+          is_dev_ready = 1;
         }
         break;
         case MSG_POWER_OFF:
@@ -260,6 +263,14 @@ void StartDefaultTask(void const * argument)
             }
           }
         
+          case MSG_USB_INIT:
+          {
+            if(!is_usb_inited){
+              /* init code for USB_DEVICE */
+              BOARD_USB_FOD_Init();
+              is_usb_inited = 1;
+            }
+            }break;
           case MSG_USB_READY:      
             {
             
@@ -269,6 +280,10 @@ void StartDefaultTask(void const * argument)
             {
               
             }break;
+          case MSG_CALIBRATION_ON:
+          {
+              kernel_calibration_on();
+            }break;
           default:
               break;
           }
@@ -277,7 +292,9 @@ void StartDefaultTask(void const * argument)
         }    
      }
    
-    kernel_default_tsk_run();
+    if(is_dev_ready){
+      kernel_default_tsk_run();
+    }
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
@@ -321,6 +338,7 @@ void prdTask(void const * argument)
   lasTimeKeyb = xTaskGetTickCount();
   drv_Keyb_Scan();
   
+  kernel_send_msg(MSG_INIT, 0, 0, 1);
 /* Infinite loop */
   for(;;)
   {
@@ -467,6 +485,7 @@ void appBulkUSB(void const * argument)
   /* USER CODE BEGIN appBulkUSB */
   uint32_t DevTicksRef200ms = 0;
   uint32_t DevTicksRef500ms = 0;
+  
   /* Infinite loop */
   for(;;)
   {

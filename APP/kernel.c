@@ -38,6 +38,7 @@ uint16_t key_pressed_cnt_down = 0;
 uint16_t key_pressed_cnt_power = 0;
 uint8_t key_pressed_power_on = 0;
 uint8_t auto_sw_channal_on = 0;
+uint8_t auto_sw_channal_cnt = 0;
 
 uint8_t led_on = 0;
 uint8_t ld_toggle_cnt = 0;
@@ -56,13 +57,16 @@ uint16_t channel;
 
 void kernel_default_tsk_init()
 {
+  //wait kayboard results
+  osDelay(200);
+  
   auto_sw_channal_on = 1;
   LED_AUTO_HIGH();
   
   drv_Optic_Init();
   
   /* init code for USB_DEVICE */
-  BOARD_USB_FOD_Init();
+//  BOARD_USB_FOD_Init();
   
   optic_send_msg(OPTIC_MSG_MSG_CHANNEL_SET, channel, 0, 1);
 
@@ -94,13 +98,15 @@ void kernel_default_tsk_run()
           key_pressed_cnt_up++;
           
           if(auto_sw_channal_on){
-              auto_sw_channal_on = 0;
-              LED_AUTO_LOW();
-          }
-          /* Set and print OSW channel */
-          channel = drv_Optic_GetChannel();
+                channel = 0;
+                auto_sw_channal_on = 0;
+                LED_AUTO_LOW();
+          }else{
+            /* Set and print OSW channel */
+            channel = drv_Optic_GetChannel();
           
-          channel++;
+            channel++;
+          }
           if(channel >= drv_Optic_GetChannelNr()){
             auto_sw_channal_on = 1;
             LED_AUTO_HIGH();
@@ -137,18 +143,34 @@ void kernel_default_tsk_run()
               }else{
                 channel = drv_Optic_GetChannelNr();
               }
-              auto_sw_channal_on = 0;
-              LED_AUTO_LOW();
+              
+              if(auto_sw_channal_on){
+                uint16_t ch  = drv_Optic_GetChannelNr();
+                if(drv_Optic_GetChannelNr() > 0){
+                  channel = drv_Optic_GetChannelNr() - 1;
+                }else{
+                  channel = drv_Optic_GetChannelNr();
+                }
+                auto_sw_channal_on = 0;
+                LED_AUTO_LOW();
+              }
             }else{
               auto_sw_channal_on = 1;
               LED_AUTO_HIGH();
             }
           }else{
             if(auto_sw_channal_on){
+              uint16_t ch  = drv_Optic_GetChannelNr();
+              if(drv_Optic_GetChannelNr() > 0){
+                channel = drv_Optic_GetChannelNr() - 1;
+              }else{
+                channel = drv_Optic_GetChannelNr();
+              }
               auto_sw_channal_on = 0;
               LED_AUTO_LOW();
+            }else{
+              channel--;
             }
-            channel--;
           }
           optic_send_msg(OPTIC_MSG_MSG_CHANNEL_SET, channel, 0, 1);
             
@@ -183,9 +205,10 @@ void kernel_default_tsk_run()
     }else{
       /* Clear Key Pressed Counters */
       key_pressed_cnt_up = 0;
-      key_pressed_cnt_down = 0;  
+      key_pressed_cnt_down = 0; 
       if(starting_flag){
         starting_flag = 0;
+        kernel_send_msg(MSG_USB_INIT, 0, 0, 1);
       }
       if(key_pressed_power_on){
         key_pressed_cnt_power = 0;
@@ -207,6 +230,10 @@ void kernel_default_tsk_run()
   
   }else{
     /* Clear Key Pressed Counters */
+    if(starting_flag){
+      starting_flag = 0;
+      kernel_send_msg(MSG_USB_INIT, 0, 0, 1);
+    }
     key_pressed_cnt_up = 0;
     key_pressed_cnt_down = 0;
     if(key_pressed_power_on){
@@ -223,7 +250,7 @@ void kernel_default_tsk_run()
     DevTicksRef10ms = ticks;
     if(led_toggle_on){
       led_toggle_cnt++;
-      if(led_toggle_cnt >= 15){
+      if(led_toggle_cnt >= 5){
         
         LED_R_TOGGLE();
         
@@ -252,7 +279,7 @@ void kernel_default_tsk_run()
       key_pressed_cnt_power++;
       if(key_pressed_cnt_power >= 40){
         //power off
-        if(!poweroff_flag){
+        if((!poweroff_flag) && (starting_flag == 0)){
           poweroff_flag  = 1;
           SetPowerButtonOn();
           
@@ -266,16 +293,25 @@ void kernel_default_tsk_run()
   if ((ticks - DevTicksRef100ms) >= 100){ /* 100 ms */
     DevTicksRef100ms = ticks;
     
-//    drv_Optic_SetDAC(DAC_val);
-//    
-//    //suspendKernelTask();
-//    optic_send_msg(OPTIC_MSG_MSG_UPDATE_DAC, 0, 0, 1);
-//    //resumeKernelTask();
-//    
-//    DAC_val+=10;
-//    if(DAC_val > 4095){
-//      DAC_val = 0;
-//    }
+    if(auto_sw_channal_on){
+        auto_sw_channal_cnt++;
+        uint8_t auto_sw_time;
+        if(ld_toggle_on){
+          auto_sw_time = 10;
+        }else{
+          auto_sw_time = 5;
+        }
+        if(auto_sw_channal_cnt >= auto_sw_time){
+          auto_sw_channal_cnt = 0;
+          /* Set and print OSW channel */
+          channel = drv_Optic_GetChannel();
+          
+          channel++;
+          if(channel >= drv_Optic_GetChannelNr()){channel = 0;}
+            
+          optic_send_msg(OPTIC_MSG_MSG_CHANNEL_SET, channel, 0, 1);
+        }
+    }else{ auto_sw_channal_cnt = 0; }
   }
 
   if((ticks - DevTicksRef500ms) >= 500){ /* 500ms */
@@ -300,15 +336,15 @@ void kernel_default_tsk_run()
           LED_R_LOW();
       }
     }
-    if(auto_sw_channal_on){
-        /* Set and print OSW channel */
-        channel = drv_Optic_GetChannel();
-        
-        channel++;
-        if(channel >= drv_Optic_GetChannelNr()){channel = 0;}
-          
-        optic_send_msg(OPTIC_MSG_MSG_CHANNEL_SET, channel, 0, 1);
-    }
+//    if(auto_sw_channal_on){
+//        /* Set and print OSW channel */
+//        channel = drv_Optic_GetChannel();
+//        
+//        channel++;
+//        if(channel >= drv_Optic_GetChannelNr()){channel = 0;}
+//          
+//        optic_send_msg(OPTIC_MSG_MSG_CHANNEL_SET, channel, 0, 1);
+//    }
   }
 }
 
@@ -316,8 +352,9 @@ void PowerOffProc(void){
   LED_R_LOW();
   LED_G_LOW();
   LED_AUTO_LOW();
-  channel = drv_Optic_GetChannel();
-  LED_CTRL( 0, channel);
+  for(channel = 0;channel < drv_Optic_GetChannelNr();channel++){
+    LED_CTRL( 0, channel);
+  }
   drv_Optic_DeInit();
   led_toggle_on = 0;
   ld_toggle_on = 0;
@@ -326,6 +363,8 @@ void PowerOffProc(void){
 
 void SetLockKeyb(void){
   KeybLockFlg = 1;
+  auto_sw_channal_cnt = 0;
+  ld_toggle_on = 0;
 }
 
 void SetUnLockKeyb(void){
@@ -334,4 +373,13 @@ void SetUnLockKeyb(void){
 
 int8_t GetKeybLock(void){
   return KeybLockFlg;
+}
+
+void kernel_calibration_on(){
+  auto_sw_channal_on = 0;
+  ld_toggle_on = 0;
+  KeybLockFlg = 1;
+  LED_R_LOW();
+  LED_G_LOW();
+  optic_send_msg(OPTIC_MSG_MSG_CHANNEL_SET, 0, 0, 1);
 }

@@ -46,7 +46,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t starting_flag = 0;
+uint8_t starting_flag = 1;
 FLASH_OBProgramInitTypeDef r_option_bytes;
 /* USER CODE END PV */
 
@@ -87,9 +87,9 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
   HAL_FLASHEx_OBGetConfig(&r_option_bytes);
-  if(r_option_bytes.BORLevel != OB_BOR_LEVEL1){  
+  if(r_option_bytes.BORLevel != OB_BOR_LEVEL5){  
     FLASH_OBProgramInitTypeDef option_bytes;
-    option_bytes.BORLevel = OB_BOR_LEVEL1;
+    option_bytes.BORLevel = OB_BOR_LEVEL5;
     option_bytes.OptionType = OPTIONBYTE_BOR;
     HAL_FLASH_OB_Unlock();
     HAL_FLASHEx_OBProgram(&option_bytes);

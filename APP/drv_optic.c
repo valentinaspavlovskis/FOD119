@@ -200,15 +200,25 @@ int8_t drv_Optic_SetChannel(uint16_t nr){
   drv_Optic_Update_DAC();
   
   // Deselect all lasers
+#ifdef LASER_TYPE_2
+  for(uint16_t ld_idx = 0;ld_idx < OPTIC_OSW_CHANNELS; ld_idx++ ){
+    HAL_GPIO_WritePin(LDs_Ports[ld_idx], LDs_Pins[ld_idx], GPIO_PIN_RESET);
+  }
+#else  
   for(uint16_t ld_idx = 0;ld_idx < OPTIC_OSW_CHANNELS; ld_idx++ ){
     HAL_GPIO_WritePin(LDs_Ports[ld_idx], LDs_Pins[ld_idx], GPIO_PIN_SET);
   }
-  
+#endif  
+
   drv_Optic_SetDAC(optic_cal_table[optic_idx_table[optic_osw_ch]]);
   drv_Optic_Update_DAC();
   
   // Select current laser
+#ifdef LASER_TYPE_2
+  HAL_GPIO_WritePin(LDs_Ports[optic_idx_table[optic_osw_ch]], LDs_Pins[optic_idx_table[optic_osw_ch]], GPIO_PIN_SET);
+#else   
   HAL_GPIO_WritePin(LDs_Ports[optic_idx_table[optic_osw_ch]], LDs_Pins[optic_idx_table[optic_osw_ch]], GPIO_PIN_RESET);
+#endif
   
   //osDelay(20);
   osDelay(10);
@@ -235,8 +245,11 @@ int8_t drv_Optic_ToggleReset(uint16_t nr){
     return 1;
   uint16_t optic_osw_ch = nr;
   // Select current laser
+#ifdef LASER_TYPE_2
+  HAL_GPIO_WritePin(LDs_Ports[optic_idx_table[optic_osw_ch]], LDs_Pins[optic_idx_table[optic_osw_ch]], GPIO_PIN_SET);
+#else   
   HAL_GPIO_WritePin(LDs_Ports[optic_idx_table[optic_osw_ch]], LDs_Pins[optic_idx_table[optic_osw_ch]], GPIO_PIN_RESET);
-  
+#endif  
   return 0;
 }
 
