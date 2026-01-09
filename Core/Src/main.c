@@ -101,10 +101,9 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   /* USER CODE BEGIN 2 */
+  MX_IWDG_Init();
   MX_ADC_Init();
-  
   starting_flag = 1;
-  
   HAL_Delay(100);
   MX_ADC_Start();
   /* USER CODE END 2 */

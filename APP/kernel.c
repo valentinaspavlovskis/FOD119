@@ -16,6 +16,8 @@
 #include <string.h>
 #include <stdarg.h>
 
+#define POWER_ON_TIME (2) //* 500 ms
+
 extern uint8_t starting_flag;  
 uint8_t poweroff_flag  = 0;
 measurement_t *curr_adc_val;
@@ -30,6 +32,7 @@ uint32_t DevTicksRef500ms = 0;
 uint32_t DevTicksRef50ms = 0;
 uint32_t DevTicksRef10ms = 0;
 uint32_t DevTicksRef100ms = 0;
+uint32_t PowerOnCnt = 0;
 
 uint32_t DAC_val = 0;
 
@@ -208,7 +211,11 @@ void kernel_default_tsk_run()
       key_pressed_cnt_down = 0; 
       if(starting_flag){
         starting_flag = 0;
-        kernel_send_msg(MSG_USB_INIT, 0, 0, 1);
+        if(PowerOnCnt < POWER_ON_TIME){
+          kernel_send_msg(MSG_POWER_OFF, 0, 0, 1);
+        }else{
+          kernel_send_msg(MSG_USB_INIT, 0, 0, 1);
+        }
       }
       if(key_pressed_power_on){
         key_pressed_cnt_power = 0;
@@ -222,17 +229,21 @@ void kernel_default_tsk_run()
           }else{
             LED_R_LOW();
           }
-        }
-          
+        }   
       }
-
     }
   
   }else{
     /* Clear Key Pressed Counters */
     if(starting_flag){
+      
       starting_flag = 0;
-      kernel_send_msg(MSG_USB_INIT, 0, 0, 1);
+      if(PowerOnCnt < POWER_ON_TIME){
+        kernel_send_msg(MSG_POWER_OFF, 0, 0, 1);
+      }else{
+        kernel_send_msg(MSG_USB_INIT, 0, 0, 1);
+      }
+      
     }
     key_pressed_cnt_up = 0;
     key_pressed_cnt_down = 0;
@@ -317,7 +328,11 @@ void kernel_default_tsk_run()
   if((ticks - DevTicksRef500ms) >= 500){ /* 500ms */
     DevTicksRef500ms = ticks;
     
+    PowerOnCnt++;
     
+    if(starting_flag && PowerOnCnt >= POWER_ON_TIME){
+      kernel_send_msg(MSG_INIT, 0, 0, 1);
+    }
   }
   
   if((ticks - DevTicksRef1s) >= 1000){ /* 1s */
@@ -336,15 +351,6 @@ void kernel_default_tsk_run()
           LED_R_LOW();
       }
     }
-//    if(auto_sw_channal_on){
-//        /* Set and print OSW channel */
-//        channel = drv_Optic_GetChannel();
-//        
-//        channel++;
-//        if(channel >= drv_Optic_GetChannelNr()){channel = 0;}
-//          
-//        optic_send_msg(OPTIC_MSG_MSG_CHANNEL_SET, channel, 0, 1);
-//    }
   }
 }
 
@@ -359,6 +365,7 @@ void PowerOffProc(void){
   led_toggle_on = 0;
   ld_toggle_on = 0;
   starting_flag = 1;
+  PowerOnCnt = 0;
 }
 
 void SetLockKeyb(void){

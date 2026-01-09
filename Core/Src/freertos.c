@@ -338,7 +338,8 @@ void prdTask(void const * argument)
   lasTimeKeyb = xTaskGetTickCount();
   drv_Keyb_Scan();
   
-  kernel_send_msg(MSG_INIT, 0, 0, 1);
+  //kernel_send_msg(MSG_INIT, 0, 0, 1);
+  is_dev_ready = 1;
 /* Infinite loop */
   for(;;)
   {

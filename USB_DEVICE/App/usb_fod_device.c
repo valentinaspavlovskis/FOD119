@@ -63,7 +63,7 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
+uint8_t is_usb_device_initialized = 0;
 /* USER CODE END PV */
 
 /* USER CODE BEGIN PFP */
@@ -87,17 +87,25 @@ USBD_HandleTypeDef hUsbFodDeviceFS;
 /* USER CODE BEGIN 1 */
 void BOARD_USB_FOD_Init()
 {
+  
+  return;
   /* Init Device Library,Add Supported Class and Start the library*/
-  USBD_Init(&hUsbFodDeviceFS, &FS_FOD_Desc, DEVICE_FS);
-  
-  USBD_RegisterClass(&hUsbFodDeviceFS, &USBD_FOD);
-  
-  USBD_Start(&hUsbFodDeviceFS);
+  if(is_usb_device_initialized == 0){
+    USBD_Init(&hUsbFodDeviceFS, &FS_FOD_Desc, DEVICE_FS);
+    
+    USBD_RegisterClass(&hUsbFodDeviceFS, &USBD_FOD);
+    
+    USBD_Start(&hUsbFodDeviceFS);
+    
+    is_usb_device_initialized = 1;
+  }
 }
 
 void BOARD_USB_FOD_DeInit()
 {
-  USBD_Stop(&hUsbFodDeviceFS);
+  if(is_usb_device_initialized){
+    USBD_Stop(&hUsbFodDeviceFS);
+  }
 }
 /* USER CODE END 1 */
 
