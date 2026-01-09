@@ -313,6 +313,7 @@ void StartTimerTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+    
     osDelay(1);
   }
   /* USER CODE END StartTimerTask */
@@ -417,7 +418,7 @@ void appTaskOptic(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    event = osMessageGet(opticQueueHandle, 0);
+    event = osMessageGet(opticQueueHandle, osWaitForever);
     if(event.status == osEventMessage){
       uint32_t q_msg = event.value.v;
       optic_msg_t* optic_msg;

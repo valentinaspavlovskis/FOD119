@@ -87,8 +87,6 @@ USBD_HandleTypeDef hUsbFodDeviceFS;
 /* USER CODE BEGIN 1 */
 void BOARD_USB_FOD_Init()
 {
-  
-  return;
   /* Init Device Library,Add Supported Class and Start the library*/
   if(is_usb_device_initialized == 0){
     USBD_Init(&hUsbFodDeviceFS, &FS_FOD_Desc, DEVICE_FS);
